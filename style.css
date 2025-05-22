@@ -1,0 +1,120 @@
+body {
+    margin: 0;
+    overflow: hidden; /* Balonlar dışarı taşmasın */
+    background-color: #87ceeb; /* Gökyüzü rengi */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Arial', sans-serif;
+}
+
+#game-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden; /* Balonların sadece bu alan içinde görünmesini sağlar */
+    background: linear-gradient(to bottom, #87ceeb, #a2d9ed); /* Hafif gradyan */
+}
+
+#header-info { /* Puan ve zamanı hizalamak için yeni eklenen kapsayıcı */
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px; /* Sağa da uzanacak ki içindeki elemanları dağıtabilelim */
+    display: flex; /* Flexbox kullan */
+    justify-content: space-between; /* İçindeki öğeleri iki yana yasla */
+    align-items: center; /* Dikeyde ortala */
+    z-index: 10; /* Balonların üzerinde görünmesini sağlar */
+    color: white; /* Ortak renk */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Ortak gölge */
+    font-weight: bold; /* Ortak kalınlık */
+}
+
+#score-display {
+    /* Artık position: absolute; gerek yok, header-info içindeki flexbox yönetecek */
+    font-size: 2em; /* Boyutu koru */
+    /* top, left, right özellikleri kaldırıldı */
+}
+
+#timer-display {
+    /* Artık position: absolute; gerek yok, header-info içindeki flexbox yönetecek */
+    font-size: 2em; /* Boyutu koru */
+    /* top, left, right özellikleri kaldırıldı */
+}
+
+
+#startButton {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 15px 30px;
+    font-size: 1.8em;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+#startButton:hover {
+    background-color: #218838;
+}
+
+.balloon {
+    position: absolute;
+    width: 120px; /* Balon boyutu */
+    height: 150px;
+    /* background-color varsayılanı kaldırıldı, renkler sınıflardan gelecek */
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; /* Balon şekli */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5em; /* Arapça kelime boyutu */
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    box-shadow: inset -5px -5px 5px rgba(0, 0, 0, 0.2),
+                inset 5px 5px 5px rgba(255, 255, 255, 0.5);
+    animation: floatUp var(--duration) linear infinite; /* JavaScript ile süre verilecek */
+    transition: transform 0.1s ease-out; /* Tıklama efekti için */
+    z-index: 5; /* Balonlar puan ekranının altında kalsın */
+}
+
+.balloon::after { /* Balonun ipi */
+    content: '';
+    position: absolute;
+    bottom: -15px; /* Balonun altından başla */
+    width: 2px;
+    height: 20px;
+    background-color: #ccc;
+    z-index: -1;
+}
+
+/* Balon renkleri (rastgele atanacak) - Kırmızı renk çıkarıldı */
+.balloon.color2 { background-color: #4682b4; } /* Çelik Mavi */
+.balloon.color3 { background-color: #32cd32; } /* Limon Yeşil */
+.balloon.color4 { background-color: #9370db; } /* Orta Mor */
+.balloon.color5 { background-color: #ffd700; } /* Altın */
+
+/* Balon hareket animasyonu */
+@keyframes floatUp {
+    0% {
+        transform: translateY(100vh); /* Ekranın altından başla */
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-200px); /* Ekranın üstünden dışarı çık */
+        opacity: 0;
+    }
+}

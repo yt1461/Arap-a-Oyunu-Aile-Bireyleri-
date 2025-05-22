@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameInterval;
     let speechInterval;
     let gameTimer;
-    let timeLeft = 20; // Başlangıç süresi: 180 saniye (3 dakika)
+    let timeLeft = 180; // Başlangıç süresi: 180 saniye (3 dakika)
     let currentVoice = null;
     let currentTargetWord = null;
     let gameStarted = false;
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameStarted = true;
         startButton.style.display = 'none';
         score = 0;
-        timeLeft = 20;
+        timeLeft = 180;
         scoreDisplay.textContent = `Puan: ${score}`;
         timerDisplay.textContent = `Süre: ${timeLeft}s`;
 

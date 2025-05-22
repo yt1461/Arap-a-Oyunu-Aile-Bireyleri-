@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameInterval; // Balon oluşturma aralığı
     let speechInterval; // Ses tekrar aralığı
     let gameTimer; // Oyun süresi için interval
-    let timeLeft = 60; // Başlangıç süresi: 60 saniye
+    let timeLeft = 180; // Başlangıç süresi: 180 saniye
     let currentVoice = null; // Şu an konuşan sesi tutarız
     let currentTargetWord = null; // Şu an hedeflenen Türkçe kelime
     let gameStarted = false; // Oyunun başlayıp başlamadığını takip et

@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameStarted = true; // Oyunu başlattık
         startButton.style.display = 'none';
         score = 0;
-        timeLeft = 60; // Süreyi sıfırla
+        timeLeft = 180; // Süreyi sıfırla
         scoreDisplay.textContent = `Puan: ${score}`;
         timerDisplay.textContent = `Süre: ${timeLeft}s`; // Zamanı göster
 

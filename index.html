@@ -3,16 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arapça Balon Oyunu</title>
-    <link rel="stylesheet" href="style.css"> </head>
+    <title>Arapça Kelimeler Oyunu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
-
-    <div id="game-container">
-        <div id="header-info"> <div id="score-display">Puan: 0</div>
-            <div id="timer-display">Süre: 180s</div>
-        </div>
-        <button id="startButton">Oyunu Başlat</button>
+    <div class="container">
+        <div class="top-bar">
+            <div id="sure">Süre: 00:00</div>
         </div>
 
-    <script src="script.js"></script> </body>
+        <div id="gosterilenTurkceKelime"></div>
+
+        <button id="baslatButton">Oyunu Başlat</button>
+
+        <div id="oyunAlani">
+            </div>
+
+        <div id="geriBildirimMesajlari"></div>
+
+        <div id="oyunSonu" style="display: none;">
+            <h2>Oyun Tamamlandı. Tebrikler!</h2>
+            <p>Geçen Süre: <span id="toplamSure"></span></p>
+            <label for="oyuncuAdi">Adınız:</label>
+            <input type="text" id="oyuncuAdi" placeholder="Adınızı buraya girin">
+            <button id="kaydetButton">Kaydet</button>
+            <p id="kayitMesaj"></p>
+            <button id="tekrarOynaButton">Tekrar Oyna</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>

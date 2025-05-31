@@ -1,201 +1,292 @@
 body {
+    font-family: 'Arial', sans-serif;
     margin: 0;
-    overflow: hidden; /* Balonlar dışarı taşmasın */
-    background-color: #87ceeb; /* Gökyüzü rengi */
+    background-color: #ffe0b2; /* Açık turuncu */
+    overflow: hidden; /* Sayfanın kaydırılmasını engelle */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    font-family: 'Arial', sans-serif;
 }
 
-#game-container {
-    width: 100vw;
-    height: 100vh;
+.container {
     position: relative;
-    overflow: hidden; /* Balonların sadece bu alan içinde görünmesini sağlar */
-    background: linear-gradient(to bottom, #87ceeb, #a2d9ed); /* Hafif gradyan */
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 90vw; /* Ekran genişliğine duyarlı */
+    max-width: 900px; /* Maksimum genişlik */
+    min-height: 500px; /* Konteyner minimum yüksekliği */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-#header-info { /* Puan ve zamanı hizalamak için yeni eklenen kapsayıcı */
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px; /* Sağa da uzanacak ki içindeki elemanları dağıtabilelim */
-    display: flex; /* Flexbox kullan */
-    justify-content: space-between; /* İçindeki öğeleri iki yana yasla */
-    align-items: center; /* Dikeyde ortala */
-    z-index: 10; /* Balonların üzerinde görünmesini sağlar */
-    color: white; /* Ortak renk */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Ortak gölge */
-    font-weight: bold; /* Ortak kalınlık */
+.top-bar {
+    position: absolute; /* Kronometre için mutlak konumlandırma */
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start; /* Kronometreyi sola hizala */
+    align-items: flex-start; /* Kronometreyi yukarı hizala */
+    padding: 15px 20px; /* Kenarlardan boşluk bırak */
+    box-sizing: border-box;
 }
 
-#score-display {
-    font-size: 2em; /* Boyutu koru */
+#sure {
+    font-size: 1.6em; /* Font boyutu küçültüldü */
+    font-weight: bold;
+    color: #333;
 }
 
-#timer-display {
-    font-size: 2em; /* Boyutu koru */
+#gosterilenTurkceKelime {
+    position: absolute; /* Mutlak konumlandırma */
+    top: 15px; /* Üstten boşluk */
+    left: 50%; /* Ortalamak için */
+    transform: translateX(-50%); /* Kendi genişliğinin yarısı kadar sola kaydır */
+    margin-top: 0; /* Eski margin-top'ı sıfırla */
+    font-size: 1.8em; /* Font boyutu küçültüldü */
+    font-weight: bold;
+    color: #007bff; /* Mavi renk */
+    min-height: 1.5em; /* İçerik yokken bile yer kaplaması için */
+    z-index: 10; /* Diğer elementlerin üzerinde olması için */
+    white-space: nowrap; /* Kelimenin tek satırda kalmasını sağla */
 }
 
-#startButton {
+#baslatButton, #tekrarOynaButton {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 80px; /* Üstteki kronometre ve kelime için boşluk */
+    margin-bottom: 20px;
+}
+
+#baslatButton:hover, #tekrarOynaButton:hover {
+    background-color: #45a049;
+}
+
+#oyunAlani {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* Her satırda 5 eşit genişlikte sütun */
+    gap: 15px; /* Balonlar arası boşluk azaltıldı */
+    justify-items: center; /* Öğeleri hücrelerin ortasında hizala */
+    align-items: center; /* Öğeleri dikeyde hücrelerin ortasında hizala */
+
+    width: 100%;
+    min-height: 300px; /* Minimum oyun alanı yüksekliği */
+    margin: 20px auto;
+    border: 1px dashed #ccc; /* Sınırları görmek için (isteğe bağlı) */
+    padding: 20px; /* Kenarlara yapışmayı engellemek için */
+    box-sizing: border-box; /* Padding'i genişliğe dahil et */
+}
+
+.balon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px; /* Balon genişliği azaltıldı */
+    height: 80px; /* Balon yüksekliği azaltıldı */
+    border-radius: 8px; /* Dikdörtgen için köşeleri yuvarlatıldı */
+    font-size: 1.6em; /* Arapça kelime için font boyutu azaltıldı */
+    font-weight: bold;
+    color: black; /* Arapça kelimeler siyah renkli olacak */
+    cursor: pointer;
+    /* Kabartmalı, buton benzeri görünüm */
+    box-shadow: 
+        inset 2px 2px 5px rgba(255, 255, 255, 0.5), /* Üst sol iç gölge (açık) */
+        inset -2px -2px 5px rgba(0, 0, 0, 0.3),    /* Alt sağ iç gölge (koyu) */
+        3px 3px 6px rgba(0, 0, 0, 0.4),             /* Dış gölge */
+        -3px -3px 6px rgba(255, 255, 255, 0.6);     /* Dış ışık */
+    border: 1px solid rgba(0, 0, 0, 0.1); /* Hafif bir kenarlık */
+    user-select: none; /* Metin seçilemesini engelle */
+    transition: transform 0.2s ease-out, opacity 0.3s ease-out, box-shadow 0.2s ease-out; /* Tıklama animasyonu ve kaybolma */
+    direction: rtl; /* Arapça metin için sağdan sola yazım */
+    text-align: center; /* Metni balon içinde ortala */
+    padding: 5px; /* Kelimenin kenarlara yapışmasını engellemek için */
+    box-sizing: border-box; /* Padding'i genişliğe dahil et */
+}
+
+.balon:active {
+    /* Tıklayınca içeri gömülme efekti */
+    box-shadow: 
+        inset 1px 1px 3px rgba(0, 0, 0, 0.4), 
+        inset -1px -1px 3px rgba(255, 255, 255, 0.5),
+        1px 1px 2px rgba(0, 0, 0, 0.2);
+    transform: translateY(1px); /* Hafifçe aşağı kaydır */
+}
+
+
+.balon.patladi {
+    opacity: 0;
+    transform: scale(0.1);
+}
+
+.balon.yanlis {
+    animation: sallan 0.3s ease-in-out;
+    background-color: #dc3545 !important; /* Yanlış tıklamada kırmızı */
+    color: white !important; /* Yanlış balonda metin rengini beyaza çevir */
+    text-shadow: none !important; /* Yanlış balonda bordürü kaldır */
+}
+
+@keyframes sallan {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+
+#oyunSonu {
+    margin-top: 30px;
+}
+
+#oyuncuAdi {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1.1em;
+    width: calc(100% - 22px); /* Padding'i hesaba kat */
+    max-width: 250px;
+}
+
+#kaydetButton {
+    padding: 10px 20px;
+    font-size: 1em;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+}
+
+#kaydetButton:hover {
+    background-color: #0056b3;
+}
+
+#kayitMesaj {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Geri Bildirim Mesajları Stili */
+#geriBildirimMesajlari {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    padding: 15px 30px;
-    font-size: 1.8em;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    z-index: 10;
-}
-
-#startButton:hover {
-    background-color: #218838;
-}
-
-.balloon {
-    position: absolute;
-    width: 120px; /* Balon boyutu */
-    height: 150px;
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; /* Balon şekli */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2.5em; /* Arapça kelime boyutu */
+    font-size: 3em; /* Büyük font */
     font-weight: bold;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    cursor: pointer;
-    box-shadow: inset -5px -5px 5px rgba(0, 0, 0, 0.2),
-                inset 5px 5px 5px rgba(255, 255, 255, 0.5);
-    animation: floatUp var(--duration) linear infinite; /* JavaScript ile süre verilecek */
-    transition: transform 0.1s ease-out; /* Tıklama efekti için */
-    z-index: 5; /* Balonlar puan ekranının altında kalsın */
+    color: white; /* Beyaz renk */
+    border: 5px solid #800000; /* Bordo kenarlık */
+    border-radius: 10px; /* Kenarlıklara yuvarlaklık */
+    padding: 15px; /* Kenarlık ve metin arası boşluk */
+    background-color: rgba(0, 0, 0, 0.3); /* Şeffaf siyah arka plan (isteğe bağlı) */
+    text-shadow: 2px 2px 4px #4D0000; /* Metin gölgesi rengi bordo tonu olarak ayarlandı */
+    opacity: 0; /* Başlangıçta gizli */
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    pointer-events: none; /* Üzerine tıklamayı engelle */
+    z-index: 1000; /* Diğer elementlerin üzerinde */
+    white-space: nowrap; /* Mesajın tek satırda kalmasını sağla */
 }
 
-.balloon::after { /* Balonun ipi */
-    content: '';
-    position: absolute;
-    bottom: -15px; /* Balonun altından başla */
-    width: 2px;
-    height: 20px;
-    background-color: #ccc;
-    z-index: -1;
+#geriBildirimMesajlari.goster {
+    animation: fadeInOut 2s forwards; /* Animasyon süresi ve doldurma modu */
 }
 
-/* Balon renkleri (rastgele atanacak) - Kırmızı renk çıkarıldı */
-.balloon.color2 { background-color: #4682b4; } /* Çelik Mavi */
-.balloon.color3 { background-color: #32cd32; } /* Limon Yeşil */
-.balloon.color4 { background-color: #9370db; } /* Orta Mor */
-.balloon.color5 { background-color: #ffd700; } /* Altın */
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } /* Başlangıçta küçük ve şeffaf */
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1); } /* Ortaya doğru büyüyerek ve görünür hale gelerek */
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } /* Bir süre görünür kalır */
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); } /* Yavaşça kaybolur ve biraz büyür */
+}
 
-/* Balon hareket animasyonu */
-@keyframes floatUp {
-    0% {
-        transform: translateY(100vh); /* Ekranın altından başla */
-        opacity: 0;
+
+/* Farklı balon renkleri (Canlı ve Çocuk Dostu Renkler) */
+.renk1 { background-color: #FF69B4; } /* Parlak Pembe */
+.renk2 { background-color: #87CEEB; } /* Gökyüzü Mavisi */
+.renk3 { background-color: #32CD32; } /* Limon Yeşili */
+.renk4 { background-color: #FFD700; } /* Güneş Sarısı */
+.renk5 { background-color: #FF4500; } /* Turuncu Kırmızı */
+.renk6 { background-color: #8A2BE2; } /* Mor */
+.renk7 { background-color: #40E0D0; } /* Turkuaz */
+.renk8 { background-color: #00FFFF; } /* Elektrik Mavisi (Cyan) */
+.renk9 { background-color: #FF007F; } /* Canlı Pembe */
+.renk10 { background-color: #00FF00; } /* Canlı Yeşil */
+.renk11 { background-color: #FF8C00; } /* Koyu Turuncu */
+.renk12 { background-color: #9370DB; } /* Orta Mor */
+
+
+@media (max-width: 768px) {
+    #oyunAlani {
+        grid-template-columns: repeat(4, 1fr); /* Daha küçük ekranlarda 4 sütun */
+        gap: 12px; /* Balonlar arası boşluk biraz daha azaltıldı */
     }
-    10% {
-        opacity: 1;
+    .balon {
+        width: 80px; /* Mobil için balon genişliği */
+        height: 60px; /* Mobil için balon yüksekliği */
+        font-size: 1.4em; /* Mobil için balon fontunu ayarla */
     }
-    90% {
-        opacity: 1;
+    #gosterilenTurkceKelime {
+        font-size: 1.3em; /* Mobil için font boyutu küçültüldü */
+        top: 10px; /* Mobil için üstten boşluğu ayarla */
     }
-    100% {
-        transform: translateY(-200px); /* Ekranın üstünden dışarı çık */
-        opacity: 0;
+    #sure {
+        font-size: 1.4em; /* Mobil için font boyutu küçültüldü */
+    }
+    #geriBildirimMesajlari {
+        font-size: 2em; /* Daha küçük ekranlarda fontu küçült */
+        padding: 10px; /* Mobil için padding'i ayarla */
+        border-width: 3px; /* Mobil için kenarlık kalınlığını ayarla */
+    }
+    #baslatButton {
+        margin-top: 70px; /* Mobil için butonun üst boşluğunu ayarla */
     }
 }
 
-/* Oyun Sonu Modal Kutusu Stilleri */
-.modal {
-    display: none; /* Varsayılan olarak gizli */
-    position: fixed; /* Ekranın üzerinde sabit kalır */
-    z-index: 20; /* Diğer her şeyin üzerinde görünür */
-    left: 0;
-    top: 0;
-    width: 100%; /* Tam genişlik */
-    height: 100%; /* Tam yükseklik */
-    overflow: auto; /* İçerik taşarsa kaydırma çubuğu çıkar */
-    background-color: rgba(0,0,0,0.7); /* Yarı saydam siyah arka plan */
-    display: flex; /* İçeriği ortalamak için */
-    justify-content: center; /* Yatayda ortala */
-    align-items: center; /* Dikeyde ortala */
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: auto; /* Dikeyde ve yatayda ortalama */
-    padding: 30px;
-    border: 1px solid #888;
-    width: 80%; /* Genişlik */
-    max-width: 400px; /* Maksimum genişlik */
-    border-radius: 10px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
-    text-align: center;
-    position: relative;
-    color: #333;
-}
-
-.close-button {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    cursor: pointer;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.modal-content h2 {
-    margin-top: 0;
-    color: #28a745;
-}
-
-.modal-content p {
-    font-size: 1.2em;
-    margin-bottom: 20px;
-}
-
-.modal-content label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.modal-content input[type="text"] {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1em;
-}
-
-.modal-content button {
-    background-color: #28a745;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1.1em;
-}
-
-.modal-content button:hover {
-    background-color: #218838;
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+    .top-bar {
+        padding: 10px 15px; /* Mobil için boşluğu ayarla */
+    }
+    #sure {
+        font-size: 1.3em; /* Mobil için font boyutu küçültüldü */
+    }
+    #oyunAlani {
+        grid-template-columns: repeat(3, 1fr); /* Çok küçük ekranlarda 3 sütun */
+        gap: 8px; /* Balonlar arası boşluk daha da azaltıldı */
+    }
+    .balon {
+        width: 70px; /* Çok küçük ekranlar için balon genişliği */
+        height: 50px; /* Çok küçük ekranlar için balon yüksekliği */
+        font-size: 1.1em; /* Çok küçük ekranlar için balon fontunu ayarla */
+    }
+    #gosterilenTurkceKelime {
+        font-size: 1.1em; /* Çok küçük mobil için font boyutu küçültüldü */
+        top: 5px; /* Çok küçük mobil için üstten boşluğu ayarla */
+    }
+    #baslatButton, #tekrarOynaButton {
+        padding: 10px 20px;
+        font-size: 1em;
+        margin-top: 60px; /* Çok küçük mobil için butonun üst boşluğunu ayarla */
+    }
+    #geriBildirimMesajlari {
+        font-size: 1.5em; /* Daha küçük ekranlarda fontu daha da küçült */
+        padding: 8px; /* Çok küçük mobil için padding'i ayarla */
+        border-width: 2px; /* Çok küçük mobil için kenarlık kalınlığını ayarla */
+    }
 }

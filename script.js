@@ -1,267 +1,260 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const gameContainer = document.getElementById('game-container');
-    const scoreDisplay = document.getElementById('score-display');
-    const timerDisplay = document.getElementById('timer-display');
-    const startButton = document.getElementById('startButton');
+    const baslatButton = document.getElementById('baslatButton');
+    const oyunAlani = document.getElementById('oyunAlani');
+    const sureDiv = document.getElementById('sure');
+    const oyunSonuDiv = document.getElementById('oyunSonu');
+    const toplamSureSpan = document.getElementById('toplamSure');
+    const oyuncuAdiInput = document.getElementById('oyuncuAdi');
+    const kaydetButton = document.getElementById('kaydetButton');
+    const kayitMesajiParagraf = document.getElementById('kayitMesaj');
+    const tekrarOynaButton = document.getElementById('tekrarOynaButton');
+    const gosterilenTurkceKelimeDiv = document.getElementById('gosterilenTurkceKelime');
+    const geriBildirimMesajlariDiv = document.getElementById('geriBildirimMesajlari');
 
-    // Modal değişkenlerini artık burada tanımlamayacağız, endGame içinde oluşturacağız.
-
-    let score = 0;
-    let gameInterval;
-    let speechInterval;
-    let gameTimer;
-    let timeLeft = 180; // Başlangıç süresi: 180 saniye (3 dakika)
-    let currentVoice = null;
-    let currentTargetWord = null;
-    let gameStarted = false;
-
-    // Arapça kelimeler ve Türkçe karşılıkları (Sadece senin istediğin kelimeler)
-    const words = [
-        { arabic: 'أُمّ', turkish: 'anne' },
-        { arabic: 'أَب', turkish: 'baba' },
-        { arabic: 'جَدّ', turkish: 'dede' },
-        { arabic: 'بِنْت', turkish: 'kız çocuk' },
-        { arabic: 'وَلَد', turkish: 'erkek çocuk' },
-        { arabic: 'أُخْت', turkish: 'kız kardeş' },
-        { arabic: 'أَخ', turkish: 'erkek kardeş' },
-        { arabic: 'عَمّة', turkish: 'hala' },
-        { arabic: 'عَمّ', turkish: 'amca' },
-        { arabic: 'خَال', turkish: 'dayı' },
-        { arabic: 'خَالَة', turkish: 'teyze' },
-        { arabic: 'جَدّة', turkish: 'nine' },
-        { arabic: 'عَائِلَة', turkish: 'aile' }
+    const kelimeler = [
+        { tr: 'anne', ar: 'أُمّ', ses: 'anne' },
+        { tr: 'baba', ar: 'أَب', ses: 'baba' },
+        { tr: 'dede', ar: 'جَدّ', ses: 'dede' },
+        { tr: 'nine', ar: 'جَدّة', ses: 'nine' },
+        { tr: 'amca', ar: 'عَمّ', ses: 'amca' },
+        { tr: 'hala', ar: 'عَمّة', ses: 'hala' },
+        { tr: 'teyze', ar: 'خَالَة', ses: 'teyze' },
+        { tr: 'dayı', ar: 'خَال', ses: 'dayı' },
+        { tr: 'kız kardeş', ar: 'أُخْت', ses: 'kız kardeş' },
+        { tr: 'erkek kardeş', ar: 'أَخ', ses: 'erkek kardeş' },
+        { tr: 'aile', ar: 'عَائِلَة', ses: 'aile' },
+        // Evle ilgili kelimeler
+        { tr: 'mutfak', ar: 'مَطْبَخ', ses: 'mutfak' },
+        { tr: 'banyo', ar: 'حَمّام', ses: 'banyo' },
+        { tr: 'tuvalet', ar: 'مِرْحَاض', ses: 'tuvalet' },
+        { tr: 'oturma odası', ar: 'غُرْفَة الجُلُوس', ses: 'oturma odası' },
+        { tr: 'yatak odası', ar: 'غُرْفَة النَّوْم', ses: 'yatak odası' },
+        { tr: 'çocuk odası', ar: 'غُرْفَة الأَطْفَال', ses: 'çocuk odası' },
+        // Yön ve coğrafya kelimeleri
+        { tr: 'kuzey', ar: 'شَمَال', ses: 'kuzey' },
+        { tr: 'güney', ar: 'جَنُوب', ses: 'güney' },
+        { tr: 'doğu', ar: 'شَرْق', ses: 'doğu' },
+        { tr: 'batı', ar: 'غَرْب', ses: 'غَرْب' },
+        { tr: 'Türkiye', ar: 'تُرْكِيَا', ses: 'türkiye' },
+        { tr: 'başkent', ar: 'عَاصِمَة', ses: 'başkent' },
+        { tr: 'şehir', ar: 'مَدِينَة', ses: 'şehir' },
+        { tr: 'Trabzon', ar: 'طَرَابْزُون', ses: 'Trabzon' } // Yeni eklenen kelime
     ];
 
-    // Balon renkleri (kırmızı hariç)
-    const balloonColors = ['color2', 'color3', 'color4', 'color5'];
+    const motivasyonKelimeleri = [
+        'Harika!',
+        'Mükemmel!',
+        'Bravo!',
+        'Süper!',
+        'Doğru!',
+        'Aferin!',
+        'Tebrikler!',
+        'Devam Et!',
+        'Başarılı!',
+        'Muhteşem!'
+    ];
 
-    function speakWord(word, lang = 'tr-TR') {
-        if (!gameStarted) return;
+    let aktifKelime;
+    let sureSayac = 0; 
+    let kronometre;
+    let sesTekrarleyici;
+    let aktifBalonlar = [];
 
+    function kelimeninIlkHarfiniBuyut(str) {
+        if (!str) return '';
+        return str.charAt(0).toLocaleUpperCase('tr-TR') + str.slice(1).toLocaleLowerCase('tr-TR');
+    }
+
+    function seslendir(metin) {
         if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(word);
-            utterance.lang = lang;
-            utterance.rate = 0.8;
-
-            if (currentVoice) {
-                speechSynthesis.cancel();
-            }
-
-            speechSynthesis.speak(utterance);
-            currentVoice = utterance;
-
-            utterance.onerror = (event) => {
-                console.error('SpeechSynthesisUtterance.onerror', event);
-                currentVoice = null;
-            };
-        }
-    }
-
-    function createBalloon() {
-        if (!gameStarted) return;
-
-        const randomIndex = Math.floor(Math.random() * words.length);
-        const selectedWord = words[randomIndex];
-
-        const balloon = document.createElement('div');
-        balloon.classList.add('balloon');
-        balloon.textContent = selectedWord.arabic;
-        balloon.dataset.turkish = selectedWord.turkish;
-
-        const randomColorIndex = Math.floor(Math.random() * balloonColors.length);
-        balloon.classList.add(balloonColors[randomColorIndex]);
-
-        const startX = Math.random() * (gameContainer.clientWidth - 150);
-        balloon.style.left = `${startX}px`;
-
-        const duration = 10 + Math.random() * 10;
-        balloon.style.setProperty('--duration', `${duration}s`);
-
-        gameContainer.appendChild(balloon);
-
-        balloon.addEventListener('click', () => {
-            handleBalloonClick(balloon);
-        });
-
-        balloon.addEventListener('animationend', () => {
-            if (balloon.parentNode === gameContainer) {
-                gameContainer.removeChild(balloon);
-            }
-        });
-
-        return balloon;
-    }
-
-    function handleBalloonClick(clickedBalloon) {
-        if (!gameStarted) return;
-
-        if (currentVoice) {
             speechSynthesis.cancel();
-            currentVoice = null;
-        }
-        clearInterval(speechInterval);
-
-        const clickedTurkishWord = clickedBalloon.dataset.turkish;
-
-        if (currentTargetWord && currentTargetWord === clickedTurkishWord) {
-            score += 10;
-            scoreDisplay.textContent = `Puan: ${score}`;
-            clickedBalloon.style.backgroundColor = 'green';
-            clickedBalloon.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                if (clickedBalloon.parentNode === gameContainer) {
-                    clickedBalloon.remove();
-                }
-            }, 200);
-            playCorrectSound();
+            const utterance = new SpeechSynthesisUtterance(metin);
+            utterance.lang = 'tr-TR';
+            speechSynthesis.speak(utterance);
         } else {
-            score = Math.max(0, score - 5);
-            scoreDisplay.textContent = `Puan: ${score}`;
-            clickedBalloon.style.backgroundColor = 'red';
-            clickedBalloon.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                if (clickedBalloon.parentNode === gameContainer) {
-                    clickedBalloon.remove();
-                }
-            }, 200);
-            playWrongSound();
+            console.warn("Tarayıcınız metin okuma özelliğini desteklemiyor.");
         }
-        setTimeout(askNewWord, 700);
     }
 
-    function startGame() {
-        gameStarted = true;
-        startButton.style.display = 'none';
-        score = 0;
-        timeLeft = 180;
-        scoreDisplay.textContent = `Puan: ${score}`;
-        timerDisplay.textContent = `Süre: ${timeLeft}s`;
-
-        // Oyun başladığında varsa önceki modalı temizle
-        const existingModal = document.getElementById('gameOverModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-
-        document.querySelectorAll('.balloon').forEach(b => b.remove());
-
-        gameInterval = setInterval(() => {
-            createBalloon();
-            if (Math.random() < 0.3) {
-                 createBalloon();
-            }
-        }, 2000);
-
-        askNewWord();
-
-        gameTimer = setInterval(() => {
-            timeLeft--;
-            timerDisplay.textContent = `Süre: ${timeLeft}s`;
-            if (timeLeft <= 0) {
-                endGame();
-            }
-        }, 1000);
+    function rastgeleRenkSinifi() {
+        const renkler = ['renk1', 'renk2', 'renk3', 'renk4', 'renk5', 'renk6', 'renk7', 'renk8', 'renk9', 'renk10', 'renk11', 'renk12'];
+        return renkler[Math.floor(Math.random() * renkler.length)];
     }
 
-    function askNewWord() {
-        if (!gameStarted) return;
+    function balonOlustur(kelimeObjesi) {
+        const balon = document.createElement('div');
+        balon.classList.add('balon');
+        balon.classList.add(rastgeleRenkSinifi()); 
+        balon.textContent = kelimeObjesi.ar;
+        balon.dataset.arapca = kelimeObjesi.ar;
+        balon.dataset.turkce = kelimeObjesi.tr;
+        balon.dataset.patladi = 'false';
 
-        clearInterval(speechInterval);
+        balon.addEventListener('click', balonTiklandi);
+        oyunAlani.appendChild(balon);
+        aktifBalonlar.push(balon);
+        return balon;
+    }
 
-        const randomIndex = Math.floor(Math.random() * words.length);
-        const selectedWord = words[randomIndex];
-        currentTargetWord = selectedWord.turkish;
+    function oyunuBaslat() {
+        sureSayac = 0; 
+        guncelSureyiGoster(); 
+        oyunAlani.innerHTML = '';
+        gosterilenTurkceKelimeDiv.textContent = '';
+        oyunSonuDiv.style.display = 'none';
+        baslatButton.style.display = 'none';
+        tekrarOynaButton.style.display = 'none';
+        kayitMesajiParagraf.textContent = '';
+        oyuncuAdiInput.value = '';
+        aktifBalonlar = [];
+        geriBildirimMesajlariDiv.classList.remove('goster'); 
 
-        speakWord(selectedWord.turkish);
+        tumBalonlariOlustur();
+        aktifKelimeyiSec();
+        kronometreyiBaslat();
+        sesTekrariniBaslat();
+    }
 
-        speechInterval = setInterval(() => {
-            speakWord(selectedWord.turkish);
+    function tumBalonlariOlustur() {
+        const karisikKelimeler = [...kelimeler].sort(() => Math.random() - 0.5);
+        karisikKelimeler.forEach(kelime => {
+            balonOlustur(kelime);
+        });
+    }
+
+    function aktifKelimeyiSec() {
+        const patlamamisBalonlar = aktifBalonlar.filter(b => b.dataset.patladi === 'false');
+        if (patlamamisBalonlar.length > 0) {
+            const randomIndex = Math.floor(Math.random() * patlamamisBalonlar.length);
+            aktifKelime = kelimeler.find(k => k.ar === patlamamisBalonlar[randomIndex].dataset.arapca);
+            gosterilenTurkceKelimeDiv.textContent = kelimeninIlkHarfiniBuyut(aktifKelime.tr);
+            seslendir(aktifKelime.ses);
+        } else {
+            oyunBitti(); 
+        }
+    }
+
+    function sesTekrariniBaslat() {
+        if (sesTekrarleyici) {
+            clearInterval(sesTekrarleyici);
+        }
+        sesTekrarleyici = setInterval(() => {
+            if (aktifKelime && aktifBalonlar.filter(b => b.dataset.patladi === 'false').length > 0) {
+                seslendir(aktifKelime.ses);
+            } else {
+                clearInterval(sesTekrarleyici);
+            }
         }, 3000);
     }
 
-    function playCorrectSound() {
-        const audio = new Audio('correct.mp3');
-        audio.play().catch(e => console.error("Correct sound playback failed:", e));
+    function guncelSureyiGoster() {
+        const gosterilecekSure = Math.max(0, sureSayac); 
+        const dakika = Math.floor(gosterilecekSure / 60).toString().padStart(2, '0');
+        const saniye = (gosterilecekSure % 60).toString().padStart(2, '0');
+        sureDiv.textContent = `Süre: ${dakika}:${saniye}`;
     }
 
-    function playWrongSound() {
-        const audio = new Audio('wrong.mp3');
-        audio.play().catch(e => console.error("Wrong sound playback failed:", e));
+    function geriBildirimGoster() {
+        const randomIndex = Math.floor(Math.random() * motivasyonKelimeleri.length);
+        geriBildirimMesajlariDiv.textContent = motivasyonKelimeleri[randomIndex];
+        geriBildirimMesajlariDiv.classList.add('goster');
+
+        geriBildirimMesajlariDiv.addEventListener('animationend', () => {
+            geriBildirimMesajlariDiv.classList.remove('goster');
+            geriBildirimMesajlariDiv.textContent = ''; 
+        }, { once: true }); 
     }
 
-    startButton.addEventListener('click', startGame);
 
-    // Oyun durdurma fonksiyonu - MODALI DİNAMİK OLARAK OLUŞTURUYORUZ
-    function endGame() {
-        gameStarted = false;
-        clearInterval(gameInterval);
-        clearInterval(speechInterval);
-        clearInterval(gameTimer);
-        if (currentVoice) {
-            speechSynthesis.cancel();
-            currentVoice = null;
+    function balonTiklandi(event) {
+        const tiklananBalon = event.target;
+
+        if (tiklananBalon.dataset.patladi === 'true' || tiklananBalon.classList.contains('yanlis')) {
+            return;
         }
 
-        document.querySelectorAll('.balloon').forEach(b => b.remove());
+        const arapcaKelime = tiklananBalon.dataset.arapca;
 
-        // --- MODALI DİNAMİK OLARAK OLUŞTURMA ---
-        const gameOverModal = document.createElement('div');
-        gameOverModal.id = 'gameOverModal';
-        gameOverModal.classList.add('modal');
-        gameOverModal.innerHTML = `
-            <div class="modal-content">
-                <span class="close-button">&times;</span>
-                <h2>Oyun Bitti!</h2>
-                <p id="finalScore"></p>
-                <label for="playerName">Adınız Soyadınız:</label>
-                <input type="text" id="playerName" placeholder="Adınızı ve soyadınızı girin">
-                <button id="saveScoreButton">Skoru Kaydet</button>
-            </div>
-        `;
-        gameContainer.appendChild(gameOverModal); // Modalı game-container içine ekle
+        if (arapcaKelime === aktifKelime.ar) {
+            guncelSureyiGoster(); 
+            geriBildirimGoster(); 
 
-        // Modal elementlerini tekrar yakala (çünkü yeni oluşturdun)
-        const finalScoreDisplay = gameOverModal.querySelector('#finalScore');
-        const playerNameInput = gameOverModal.querySelector('#playerName');
-        const saveScoreButton = gameOverModal.querySelector('#saveScoreButton');
-        const closeButton = gameOverModal.querySelector('.close-button');
+            tiklananBalon.classList.add('patladi');
+            tiklananBalon.dataset.patladi = 'true';
+            tiklananBalon.removeEventListener('click', balonTiklandi);
 
+            clearInterval(sesTekrarleyici);
+            speechSynthesis.cancel();
+            gosterilenTurkceKelimeDiv.textContent = ''; 
 
-        finalScoreDisplay.textContent = `Puanınız: ${score}`;
-        gameOverModal.style.display = 'flex'; // Modalı görünür yap
-        playerNameInput.value = ''; // Giriş kutusunu temizle
-
-        // Modal Kapatma Butonu
-        closeButton.addEventListener('click', () => {
-            gameOverModal.style.display = 'none'; // Modalı gizle
-            gameOverModal.remove(); // Modalı HTML'den tamamen kaldır
-            startButton.textContent = 'Tekrar Oyna';
-            startButton.style.display = 'block';
-        });
-
-        // Skoru Kaydet Butonu
-        saveScoreButton.addEventListener('click', () => {
-            const playerName = playerNameInput.value.trim();
-            if (playerName) {
-                console.log(`Oyuncu: ${playerName}, Skor: ${score}`);
-                alert(`${playerName}, skorunuz ${score} kaydedildi!`);
-                gameOverModal.style.display = 'none';
-                gameOverModal.remove(); // Modalı HTML'den tamamen kaldır
-                startButton.textContent = 'Tekrar Oyna';
-                startButton.style.display = 'block';
+            if (aktifBalonlar.filter(b => b.dataset.patladi === 'false').length === 0) {
+                oyunBitti(); 
             } else {
-                alert('Lütfen adınızı ve soyadınızı girin.');
+                aktifKelimeyiSec();
+                sesTekrariniBaslat();
             }
-        });
+        } else {
+            sureSayac += 5; 
+            guncelSureyiGoster();
 
-        // Pencereye tıklama (modal dışında bir yere tıklama) ile modalı kapatma (isteğe bağlı)
-        window.addEventListener('click', (event) => {
-            if (event.target == gameOverModal) {
-                gameOverModal.style.display = 'none';
-                gameOverModal.remove(); // Modalı HTML'den tamamen kaldır
-                startButton.textContent = 'Tekrar Oyna';
-                startButton.style.display = 'block';
-            }
-        });
+            tiklananBalon.classList.add('yanlis');
+            setTimeout(() => {
+                tiklananBalon.classList.remove('yanlis');
+            }, 500);
+        }
     }
+
+    function kronometreyiBaslat() {
+        kronometre = setInterval(() => {
+            sureSayac++; 
+            guncelSureyiGoster();
+        }, 1000);
+    }
+
+    function kronometreyiDurdur() {
+        clearInterval(kronometre);
+    }
+
+    function oyunBitti() {
+        kronometreyiDurdur();
+        clearInterval(sesTekrarleyici);
+        speechSynthesis.cancel();
+        oyunAlani.innerHTML = '';
+        gosterilenTurkceKelimeDiv.textContent = '';
+        oyunSonuDiv.style.display = 'block';
+        
+        const dakika = Math.floor(sureSayac / 60).toString().padStart(2, '0');
+        const saniye = (sureSayac % 60).toString().padStart(2, '0');
+        toplamSureSpan.textContent = `${dakika}:${saniye}`;
+
+        baslatButton.style.display = 'none';
+        tekrarOynaButton.style.display = 'inline-block';
+    }
+
+    kaydetButton.addEventListener('click', () => {
+        const oyuncuAdi = oyuncuAdiInput.value.trim();
+        if (oyuncuAdi) {
+            const dakika = Math.floor(sureSayac / 60).toString().padStart(2, '0');
+            const saniye = (sureSayac % 60).toString().padStart(2, '0');
+            const oyunBilgisi = {
+                ad: oyuncuAdi,
+                gecenSure: `${dakika}:${saniye}`, 
+                tarih: new Date().toLocaleString()
+            };
+            console.log("Kaydedilen Oyun Bilgisi:", oyunBilgisi);
+            // Burada oyun bilgisini bir sunucuya veya tarayıcının LocalStorage'ına kaydedebilirsiniz.
+            // let kayitlar = JSON.parse(localStorage.getItem('oyunSkorlari') || '[]');
+            // kayitlar.push(oyunBilgisi);
+            // localStorage.setItem('oyunSkorlari', JSON.stringify(kayitlar));
+
+            kayitMesajiParagraf.textContent = "Bilgiler kaydedildi!";
+            kayitMesajiParagraf.style.color = '#28a745';
+        } else {
+            kayitMesajiParagraf.textContent = "Lütfen adınızı girin.";
+            kayitMesajiParagraf.style.color = '#dc3545';
+        }
+    });
+
+    baslatButton.addEventListener('click', oyunuBaslat);
+    tekrarOynaButton.addEventListener('click', oyunuBaslat);
 });
